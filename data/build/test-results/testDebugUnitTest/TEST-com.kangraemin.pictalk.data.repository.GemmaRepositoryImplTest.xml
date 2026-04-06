@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" tests="8" skipped="0" failures="0" errors="0" timestamp="2026-04-06T22:49:58" hostname="Eunmiui-Mac-Studio.local" time="1.207">
+  <properties/>
+  <testcase name="isReady returns false before initialize" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="1.195"/>
+  <testcase name="parseLabels splits comma-separated string" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.001"/>
+  <testcase name="buildPrompt includes scene description" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.008"/>
+  <testcase name="parseLabels filters labels longer than 10 chars" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.0"/>
+  <testcase name="parseLabels filters empty tokens" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.0"/>
+  <testcase name="parseLabels takes at most 6 labels" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.0"/>
+  <testcase name="parseLabels trims whitespace and trailing dots" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.001"/>
+  <testcase name="buildPrompt includes Korean and AAC keywords" classname="com.kangraemin.pictalk.data.repository.GemmaRepositoryImplTest" time="0.0"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

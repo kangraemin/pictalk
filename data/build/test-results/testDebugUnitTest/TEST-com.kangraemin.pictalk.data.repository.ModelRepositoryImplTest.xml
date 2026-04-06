@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.kangraemin.pictalk.data.repository.ModelRepositoryImplTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-04-06T22:49:59" hostname="Eunmiui-Mac-Studio.local" time="0.571">
+  <properties/>
+  <testcase name="modelPath points to filesDir" classname="com.kangraemin.pictalk.data.repository.ModelRepositoryImplTest" time="0.539"/>
+  <testcase name="isModelReady returns true when model file exists" classname="com.kangraemin.pictalk.data.repository.ModelRepositoryImplTest" time="0.012"/>
+  <testcase name="isModelReady returns false when file does not exist" classname="com.kangraemin.pictalk.data.repository.ModelRepositoryImplTest" time="0.013"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
