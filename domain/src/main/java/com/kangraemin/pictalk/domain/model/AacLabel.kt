@@ -1,0 +1,3 @@
+package com.kangraemin.pictalk.domain.model
+
+data class AacLabel(val text: String)
