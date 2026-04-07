@@ -17,6 +17,6 @@ class ModelRepositoryImplTest {
     }
 
     @Test fun `isModelReady returns false when file does not exist`() { assertFalse(repo.isModelReady()) }
-    @Test fun `isModelReady returns true when model file exists`() { File(tempDir, "gemma4-e4b-it-int4.bin").writeText("fake"); assertTrue(repo.isModelReady()) }
-    @Test fun `modelPath points to filesDir`() { assertTrue(repo.modelPath().startsWith(tempDir.absolutePath) && repo.modelPath().endsWith("gemma4-e4b-it-int4.bin")) }
+    @Test fun `isModelReady returns true when model file exists`() { File(tempDir, ModelRepositoryImpl.MODEL_FILENAME).writeText("fake"); assertTrue(repo.isModelReady()) }
+    @Test fun `modelPath points to filesDir`() { assertTrue(repo.modelPath().startsWith(tempDir.absolutePath) && repo.modelPath().endsWith(ModelRepositoryImpl.MODEL_FILENAME)) }
 }

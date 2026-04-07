@@ -70,8 +70,7 @@ class ModelRepositoryImpl @Inject constructor(
     }.flowOn(Dispatchers.IO)
 
     companion object {
-        const val MODEL_FILENAME = "gemma4-e4b-it-int4.bin"
-        // TODO: 실제 모델 호스팅 URL로 교체
-        const val MODEL_DOWNLOAD_URL = "https://YOUR_MODEL_HOST/gemma4-e4b-it-int4.bin"
+        const val MODEL_FILENAME = "gemma-4-E4B-it.litertlm"
+        const val MODEL_DOWNLOAD_URL = "https://huggingface.co/litert-community/gemma-4-E4B-it-litert-lm/resolve/main/gemma-4-E4B-it.litertlm"
     }
 }
