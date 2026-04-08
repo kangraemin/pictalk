@@ -47,7 +47,7 @@ class MainPresenter @AssistedInject constructor(
                     labels = emptyList()
                     isInferring = true
                     scope.launch {
-                        runCatching { gemmaRepository.suggestLabels("a scene from the selected photo") }
+                        runCatching { gemmaRepository.suggestLabels(event.uri.toString()) }
                             .onSuccess { labels = it }
                             .onFailure { status = MainScreen.Status.Error("추론 실패: ${it.message}") }
                         isInferring = false

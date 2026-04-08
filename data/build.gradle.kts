@@ -21,6 +21,7 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
     implementation(libs.mediapipe.tasks.genai)
+    implementation(libs.mediapipe.tasks.vision)
     implementation(libs.kotlinx.coroutines.android)
     implementation(libs.okhttp)
 
