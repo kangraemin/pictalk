@@ -18,6 +18,9 @@ import coil.compose.AsyncImage
 import com.slack.circuit.codegen.annotations.CircuitInject
 import dagger.hilt.components.SingletonComponent
 import java.util.Locale
+import android.net.Uri
+import androidx.core.content.FileProvider
+import java.io.File
 
 @CircuitInject(MainScreen::class, SingletonComponent::class)
 @Composable
@@ -28,6 +31,10 @@ fun Main(state: MainScreen.State, modifier: Modifier = Modifier) {
     LaunchedEffect(Unit) { tts = TextToSpeech(context) { }; tts?.language = Locale.KOREAN }
     DisposableEffect(Unit) { onDispose { tts?.shutdown() } }
 
+    var cameraUri by remember { mutableStateOf<Uri?>(null) }
+    val takePhoto = rememberLauncherForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) cameraUri?.let { state.eventSink(MainScreen.Event.OnImageSelected(it)) }
+    }
     val pickImage = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         uri?.let { state.eventSink(MainScreen.Event.OnImageSelected(it)) }
     }
@@ -69,11 +76,30 @@ fun Main(state: MainScreen.State, modifier: Modifier = Modifier) {
                             modifier = Modifier.fillMaxWidth().height(180.dp),
                         )
                     }
-                    Button(
-                        onClick = { pickImage.launch("image/*") },
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = !state.isInferring,
-                    ) { Text("사진 선택") }
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Button(
+                            onClick = {
+                                val file = File.createTempFile("camera_", ".jpg", context.externalCacheDir)
+                                val uri = FileProvider.getUriForFile(
+                                    context,
+                                    "${context.packageName}.fileprovider",
+                                    file,
+                                )
+                                cameraUri = uri
+                                takePhoto.launch(uri)
+                            },
+                            modifier = Modifier.weight(1f),
+                            enabled = !state.isInferring,
+                        ) { Text("카메라") }
+                        Button(
+                            onClick = { pickImage.launch("image/*") },
+                            modifier = Modifier.weight(1f),
+                            enabled = !state.isInferring,
+                        ) { Text("사진 선택") }
+                    }
                     if (state.isInferring) CircularProgressIndicator()
                     if (state.labels.isNotEmpty()) {
                         Text("AAC 카드", style = MaterialTheme.typography.titleMedium)
