@@ -1,7 +1,9 @@
 package com.kangraemin.pictalk.data.di
 
+import com.kangraemin.pictalk.data.repository.ArasaacRepositoryImpl
 import com.kangraemin.pictalk.data.repository.GemmaRepositoryImpl
 import com.kangraemin.pictalk.data.repository.ModelRepositoryImpl
+import com.kangraemin.pictalk.domain.repository.ArasaacRepository
 import com.kangraemin.pictalk.domain.repository.GemmaRepository
 import com.kangraemin.pictalk.domain.repository.ModelRepository
 import dagger.Binds
@@ -16,6 +18,9 @@ import javax.inject.Singleton
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class DataModule {
+
+    @Binds @Singleton
+    abstract fun bindArasaacRepository(impl: ArasaacRepositoryImpl): ArasaacRepository
 
     @Binds @Singleton
     abstract fun bindGemmaRepository(impl: GemmaRepositoryImpl): GemmaRepository

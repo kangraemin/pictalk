@@ -8,6 +8,7 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.kangraemin.pictalk.domain.model.AacLabel
+import com.kangraemin.pictalk.domain.repository.ArasaacRepository
 import com.kangraemin.pictalk.domain.repository.GemmaRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
@@ -18,6 +19,7 @@ import javax.inject.Singleton
 @Singleton
 class GemmaRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
+    private val arasaacRepository: ArasaacRepository,
 ) : GemmaRepository {
 
     private var llmInference: LlmInference? = null
@@ -72,5 +74,12 @@ class GemmaRepositoryImpl @Inject constructor(
             .map { it.trim().trimEnd('.') }
             .filter { it.isNotEmpty() && it.length <= 10 }
             .take(6)
-            .map { AacLabel(it) }
+            .map { text ->
+                val symbol = arasaacRepository.findByKeyword(text)
+                AacLabel(
+                    text = text,
+                    symbolId = symbol?.id,
+                    localImagePath = symbol?.localImagePath,
+                )
+            }
 }
