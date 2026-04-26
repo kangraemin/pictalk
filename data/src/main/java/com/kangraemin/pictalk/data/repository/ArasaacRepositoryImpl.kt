@@ -46,7 +46,7 @@ class ArasaacRepositoryImpl @Inject constructor(
         val symbols = parseMetadata(metadataJson)
         cachedSymbols = symbols
         val total = symbols.size
-        var downloaded = 0
+        var downloaded = imageDir.listFiles()?.size ?: 0
 
         symbols.chunked(20).forEach { chunk ->
             coroutineScope {
