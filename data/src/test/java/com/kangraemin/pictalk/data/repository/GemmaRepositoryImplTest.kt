@@ -24,4 +24,9 @@ class GemmaRepositoryImplTest {
     @Test fun `parseLabels takes at most 6 labels`() { assertEquals(6, repo.parseLabels("a,b,c,d,e,f,g,h").size) }
     @Test fun `parseLabels filters labels longer than 10 chars`() { assertFalse(repo.parseLabels("짧은거, 매우매우매우길어서필터됨, 또짧은").any { it.text.length > 10 }) }
     @Test fun `isReady returns false before initialize`() { assertFalse(repo.isReady()) }
+    @Test fun `buildRefinementPrompt includes label words`() {
+        val prompt = repo.buildRefinementPrompt(listOf("배고파요", "더", "주세요"))
+        assertTrue(prompt.contains("배고파요"))
+        assertTrue(prompt.contains("한국어"))
+    }
 }

@@ -77,6 +77,25 @@ class GemmaRepositoryImpl @Inject constructor(
         parseLabels(raw)
     }
 
+    override suspend fun refineSentence(labels: List<String>): String = withContext(Dispatchers.IO) {
+        val inference = llmInference ?: error("GemmaRepository not initialized")
+        val sessionOptions = LlmInferenceSession.LlmInferenceSessionOptions.builder().build()
+        val session = LlmInferenceSession.createFromOptions(inference, sessionOptions)
+        session.addQueryChunk(buildRefinementPrompt(labels))
+        val result = session.generateResponse()
+        session.close()
+        result.trim()
+    }
+
+    internal fun buildRefinementPrompt(labels: List<String>): String = """
+        <start_of_turn>user
+        다음 AAC 카드 단어들을 자연스러운 한국어 문장 하나로 만들어 주세요.
+        단어: ${labels.joinToString(", ")}
+        규칙: 짧고 자연스럽게. 문장 하나만 출력. 설명 없이.
+        <end_of_turn>
+        <start_of_turn>model
+    """.trimIndent()
+
     internal fun buildPrompt(): String = """
         <start_of_turn>user
         당신은 자폐·발달장애 아동을 위한 AAC(보완대체의사소통) 전문가입니다.

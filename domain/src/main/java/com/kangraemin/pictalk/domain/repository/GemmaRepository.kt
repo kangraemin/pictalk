@@ -8,5 +8,6 @@ interface GemmaRepository {
     val setupState: StateFlow<GemmaSetupState>
     suspend fun setup()
     suspend fun suggestLabels(imageDescription: String): List<AacLabel>
+    suspend fun refineSentence(labels: List<String>): String
     fun isReady(): Boolean
 }

@@ -18,6 +18,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -193,6 +195,51 @@ fun AACCard(label: AacLabel, index: Int, onTap: () -> Unit) {
 }
 
 @Composable
+fun SentenceBar(
+    sentence: List<AacLabel>,
+    refinedSentence: String,
+    isRefining: Boolean,
+    onRead: () -> Unit,
+    onClear: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(
+        modifier.fillMaxWidth()
+            .background(Color.White, RoundedCornerShape(16.dp))
+            .padding(12.dp),
+    ) {
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+            items(sentence) { label ->
+                Box(
+                    Modifier.background(PTCoral.copy(alpha = 0.15f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp),
+                ) {
+                    Text(label.text, style = MaterialTheme.typography.bodySmall, color = PTInk)
+                }
+            }
+        }
+        if (refinedSentence.isNotEmpty()) {
+            Spacer(Modifier.height(6.dp))
+            Text(refinedSentence, style = MaterialTheme.typography.bodyMedium, color = PTInk)
+        }
+        Spacer(Modifier.height(8.dp))
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (isRefining) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), color = PTCoral)
+            } else {
+                Button(
+                    onClick = onRead,
+                    colors = ButtonDefaults.buttonColors(containerColor = PTCoral),
+                ) {
+                    Text("🔊 읽기")
+                }
+            }
+            OutlinedButton(onClick = onClear) { Text("✕ 지우기") }
+        }
+    }
+}
+
+@Composable
 fun ScreenReadyEmpty(
     onCamera: () -> Unit,
     onGallery: () -> Unit,
@@ -265,10 +312,15 @@ fun ScreenReadyEmpty(
 fun ScreenReadyActive(
     imageUri: Uri,
     labels: List<AacLabel>,
+    sentence: List<AacLabel>,
+    refinedSentence: String,
+    isRefining: Boolean,
     isInferring: Boolean,
     onCamera: () -> Unit,
     onGallery: () -> Unit,
     onCardTap: (AacLabel) -> Unit,
+    onRead: () -> Unit,
+    onClear: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val inferTransition = rememberInfiniteTransition(label = "infer")
@@ -334,6 +386,16 @@ fun ScreenReadyActive(
                         style = MaterialTheme.typography.titleMedium, color = PTInk)
                 }
             } else {
+                if (sentence.isNotEmpty()) {
+                    SentenceBar(
+                        sentence = sentence,
+                        refinedSentence = refinedSentence,
+                        isRefining = isRefining,
+                        onRead = onRead,
+                        onClear = onClear,
+                        modifier = Modifier.padding(bottom = 12.dp),
+                    )
+                }
                 LazyVerticalGrid(GridCells.Fixed(2),
                     modifier = Modifier.weight(1f),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -385,17 +447,25 @@ fun AiUi(state: AiScreen.State, modifier: Modifier = Modifier) {
     }
     val onGallery: () -> Unit = { galleryLauncher.launch("image/*") }
 
+    LaunchedEffect(state.refinedSentence) {
+        if (state.refinedSentence.isNotEmpty()) {
+            tts?.speak(state.refinedSentence, TextToSpeech.QUEUE_FLUSH, null, null)
+        }
+    }
+
     if (state.imageUri != null) {
         ScreenReadyActive(
             imageUri = state.imageUri,
             labels = state.labels,
+            sentence = state.sentence,
+            refinedSentence = state.refinedSentence,
+            isRefining = state.isRefining,
             isInferring = state.isInferring,
             onCamera = onCamera,
             onGallery = onGallery,
-            onCardTap = { label ->
-                state.eventSink(AiScreen.Event.OnCardTapped(label))
-                tts?.speak(label.text, TextToSpeech.QUEUE_FLUSH, null, null)
-            },
+            onCardTap = { label -> state.eventSink(AiScreen.Event.OnCardTapped(label)) },
+            onRead = { state.eventSink(AiScreen.Event.OnReadSentence) },
+            onClear = { state.eventSink(AiScreen.Event.OnClearSentence) },
             modifier = modifier,
         )
     } else {
