@@ -161,8 +161,33 @@ fun AACCard(label: AacLabel, index: Int, onTap: () -> Unit) {
         elevation = CardDefaults.cardElevation(2.dp),
         border = if (pressed) BorderStroke(3.dp, PTCoral) else null,
     ) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text(label.text, style = MaterialTheme.typography.titleLarge, color = PTInk)
+        Column(
+            Modifier.fillMaxSize().padding(horizontal = 8.dp, vertical = 10.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            if (label.localImagePath != null) {
+                AsyncImage(
+                    model = File(label.localImagePath),
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth(0.65f)
+                        .aspectRatio(1f)
+                        .clip(RoundedCornerShape(10.dp)),
+                    contentScale = ContentScale.Fit,
+                )
+                Spacer(Modifier.height(8.dp))
+            }
+            Text(
+                text = label.text,
+                style = if (label.localImagePath != null)
+                    MaterialTheme.typography.bodyMedium
+                else
+                    MaterialTheme.typography.titleLarge,
+                color = PTInk,
+                textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                maxLines = 2,
+            )
         }
     }
 }
