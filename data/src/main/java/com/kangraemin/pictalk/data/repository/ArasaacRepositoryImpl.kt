@@ -30,11 +30,11 @@ class ArasaacRepositoryImpl @Inject constructor(
     private val arasaacDir = File(context.filesDir, "arasaac")
     private val imageDir = File(arasaacDir, "images").also { it.mkdirs() }
     private val metadataFile = File(arasaacDir, "metadata.json")
+    private val completeFile = File(arasaacDir, ".complete")
 
     private var cachedSymbols: List<ArasaacSymbol>? = null
 
-    override fun isReady(): Boolean =
-        metadataFile.exists() && (imageDir.listFiles()?.size ?: 0) > 100
+    override fun isReady(): Boolean = completeFile.exists()
 
     override fun downloadAll(): Flow<ArasaacDownloadState> = flow {
         emit(ArasaacDownloadState.DownloadingMetadata(0))
@@ -66,6 +66,7 @@ class ArasaacRepositoryImpl @Inject constructor(
                 )
             )
         }
+        completeFile.createNewFile()
         emit(ArasaacDownloadState.Complete)
     }.flowOn(Dispatchers.IO)
 
