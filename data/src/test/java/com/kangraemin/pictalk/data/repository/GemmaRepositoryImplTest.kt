@@ -12,7 +12,12 @@ class GemmaRepositoryImplTest {
     private val modelRepository = mockk<ModelRepository>(relaxed = true)
     @Before fun setUp() { repo = GemmaRepositoryImpl(mockk(relaxed = true), arasaacRepository, modelRepository) }
 
-    @Test fun `buildPrompt includes Korean and AAC keywords`() { assertTrue(repo.buildPrompt().run { contains("Korean") && contains("AAC") }) }
+    @Test fun `buildPrompt includes AAC context reasoning keywords`() {
+        val prompt = repo.buildPrompt()
+        assertTrue(prompt.contains("AAC"))
+        assertTrue(prompt.contains("상황"))
+        assertTrue(prompt.contains("한국어"))
+    }
     @Test fun `parseLabels splits comma-separated string`() { assertEquals(listOf("먹어요","사과","배고파요","주세요"), repo.parseLabels("먹어요, 사과, 배고파요, 주세요").map { it.text }) }
     @Test fun `parseLabels trims whitespace and trailing dots`() { assertEquals(listOf("먹어요","사과"), repo.parseLabels("  먹어요 ,  사과.  ").map { it.text }) }
     @Test fun `parseLabels filters empty tokens`() { assertEquals(listOf("먹어요"), repo.parseLabels(",, 먹어요,,").map { it.text }) }

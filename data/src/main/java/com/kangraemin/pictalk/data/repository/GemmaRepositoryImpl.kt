@@ -79,10 +79,11 @@ class GemmaRepositoryImpl @Inject constructor(
 
     internal fun buildPrompt(): String = """
         <start_of_turn>user
-        You are an AAC assistant for children with autism.
-        Look at this image and output 4-6 simple Korean AAC card labels.
-        Labels should be words or short phrases a child might want to communicate about this scene.
-        Respond ONLY with a comma-separated list. No explanation.
+        당신은 자폐·발달장애 아동을 위한 AAC(보완대체의사소통) 전문가입니다.
+        이 사진 속 상황을 분석하고, 이 상황에 있는 AAC 사용자가 표현하고 싶을 말 4~6개를 한국어로 추천하세요.
+        사진에 보이는 것을 나열하지 말고, 이 상황에서 의사소통에 필요한 말을 추천하세요.
+        예시: 병원이면 "아파요, 기다려요, 물 주세요, 화장실" / 식당이면 "주세요, 맛있어요, 더, 배고파요"
+        반드시 쉼표로 구분된 한국어 단어·짧은 문장만 출력하세요. 설명 없이.
         <end_of_turn>
         <start_of_turn>model
     """.trimIndent()
