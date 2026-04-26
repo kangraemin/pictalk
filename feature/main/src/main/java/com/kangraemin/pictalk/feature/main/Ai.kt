@@ -48,7 +48,11 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import coil.compose.AsyncImage
 import com.kangraemin.pictalk.domain.model.AacLabel
+import com.kangraemin.pictalk.domain.model.GemmaSetupState
 import com.slack.circuit.codegen.annotations.CircuitInject
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import dagger.hilt.components.SingletonComponent
 import java.io.File
 import java.util.Locale
@@ -68,6 +72,72 @@ private val PTSkyPale     = Color(0xFFCFE6F8)
 private val PTRose        = Color(0xFFF8C9C9)
 
 private val aiCardPastels = listOf(PTRose, PTButter, PTSkyPale, PTMint, PTLavender, PTPeach)
+
+@Composable
+fun ScreenGemmaSetup(
+    setupState: GemmaSetupState,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier.fillMaxSize().background(PTBackground)) {
+        PTHeader(right = { HeaderMenu() })
+        Column(
+            Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            when (setupState) {
+                is GemmaSetupState.Downloading -> {
+                    CircularProgressIndicator(color = PTCoral)
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        "AI 다운로드 중… ${setupState.progressPercent}%",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = PTInk,
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    LinearProgressIndicator(
+                        progress = { setupState.progressPercent / 100f },
+                        modifier = Modifier.fillMaxWidth(0.6f),
+                        color = PTCoral,
+                    )
+                }
+                is GemmaSetupState.Initializing -> {
+                    CircularProgressIndicator(color = PTCoral)
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        "AI 준비 중…",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = PTInk,
+                    )
+                }
+                is GemmaSetupState.Error -> {
+                    Text(
+                        "⚠️ ${setupState.message}",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = PTInk,
+                    )
+                    Spacer(Modifier.height(16.dp))
+                    Button(
+                        onClick = onRetry,
+                        colors = ButtonDefaults.buttonColors(containerColor = PTCoral),
+                    ) {
+                        Text("다시 시도")
+                    }
+                }
+                else -> {
+                    CircularProgressIndicator(color = PTCoral)
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        "AI를 준비하고 있어요",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = PTInk,
+                    )
+                }
+            }
+        }
+    }
+}
 
 @Composable
 fun AACCard(label: AacLabel, index: Int, onTap: () -> Unit) {
@@ -255,6 +325,14 @@ fun ScreenReadyActive(
 @CircuitInject(AiScreen::class, SingletonComponent::class)
 @Composable
 fun AiUi(state: AiScreen.State, modifier: Modifier = Modifier) {
+    if (state.gemmaSetupState !is GemmaSetupState.Ready) {
+        ScreenGemmaSetup(
+            setupState = state.gemmaSetupState,
+            onRetry = { state.eventSink(AiScreen.Event.OnRetryGemmaSetup) },
+            modifier = modifier,
+        )
+        return
+    }
     val context = LocalContext.current
     var tts by remember { mutableStateOf<TextToSpeech?>(null) }
     var cameraUri by remember { mutableStateOf<Uri?>(null) }

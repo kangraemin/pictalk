@@ -1,6 +1,7 @@
 package com.kangraemin.pictalk.data.repository
 
 import com.kangraemin.pictalk.domain.repository.ArasaacRepository
+import com.kangraemin.pictalk.domain.repository.ModelRepository
 import io.mockk.mockk
 import org.junit.Assert.*
 import org.junit.Before; import org.junit.Test
@@ -8,7 +9,8 @@ import org.junit.Before; import org.junit.Test
 class GemmaRepositoryImplTest {
     private lateinit var repo: GemmaRepositoryImpl
     private val arasaacRepository = mockk<ArasaacRepository>(relaxed = true)
-    @Before fun setUp() { repo = GemmaRepositoryImpl(mockk(relaxed = true), arasaacRepository) }
+    private val modelRepository = mockk<ModelRepository>(relaxed = true)
+    @Before fun setUp() { repo = GemmaRepositoryImpl(mockk(relaxed = true), arasaacRepository, modelRepository) }
 
     @Test fun `buildPrompt includes Korean and AAC keywords`() { assertTrue(repo.buildPrompt().run { contains("Korean") && contains("AAC") }) }
     @Test fun `parseLabels splits comma-separated string`() { assertEquals(listOf("먹어요","사과","배고파요","주세요"), repo.parseLabels("먹어요, 사과, 배고파요, 주세요").map { it.text }) }

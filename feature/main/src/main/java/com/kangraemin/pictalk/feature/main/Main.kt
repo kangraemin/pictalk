@@ -195,130 +195,6 @@ fun ActionPillCompact(label: String, accent: Color, modifier: Modifier = Modifie
 }
 
 @Composable
-fun ScreenChecking(isInitializing: Boolean = false) {
-    val transition = rememberInfiniteTransition(label = "orbit")
-    val spin by transition.animateFloat(0f, 360f,
-        infiniteRepeatable(tween(8000, easing = LinearEasing)), label = "spin")
-    val spinRev by transition.animateFloat(0f, -360f,
-        infiniteRepeatable(tween(12000, easing = LinearEasing)), label = "spinRev")
-
-    // padding: '0 32px' — horizontal 32dp
-    Column(Modifier.fillMaxSize().background(PTBackground)
-        .padding(horizontal = 32.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center) {
-        Box(Modifier.size(180.dp), contentAlignment = Alignment.Center) {
-            Canvas(Modifier.fillMaxSize().graphicsLayer { rotationZ = spin }) {
-                drawCircle(PTPeach, size.minDimension / 2,
-                    style = Stroke(3.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(16f, 8f))))
-            }
-            Canvas(Modifier.size(152.dp).graphicsLayer { rotationZ = spinRev }) {
-                drawCircle(PTSkyPale, size.minDimension / 2,
-                    style = Stroke(2.dp.toPx(),
-                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 6f))))
-            }
-            Pip(size = 110.dp, wiggle = true)
-        }
-        Spacer(Modifier.height(36.dp))
-        Text(if (isInitializing) "모델 초기화 중이에요" else "준비 중이에요",
-            style = MaterialTheme.typography.headlineMedium, color = PTInk)
-        Spacer(Modifier.height(8.dp))
-        Text("핍이 카드를 찾고 있어요 ✨",
-            style = MaterialTheme.typography.bodyLarge, color = PTInkSoft)
-        Spacer(Modifier.height(32.dp))
-        // dotPulse: CSS 1.4s 전체 사이클 = 방향당 700ms
-        // tween(700) RepeatMode.Reverse → 700ms + 700ms reverse = 1.4s ✅
-        val dotScales = (0..2).map { i ->
-            transition.animateFloat(0.7f, 1.15f,
-                infiniteRepeatable(tween(700, delayMillis = i * 180, easing = FastOutSlowInEasing),
-                    RepeatMode.Reverse), label = "dotScale$i")
-        }
-        val dotAlphas = (0..2).map { i ->
-            transition.animateFloat(0.5f, 1.0f,
-                infiniteRepeatable(tween(700, delayMillis = i * 180, easing = FastOutSlowInEasing),
-                    RepeatMode.Reverse), label = "dotAlpha$i")
-        }
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            (0..2).forEach { i ->
-                Box(Modifier.size(10.dp)
-                    .graphicsLayer {
-                        scaleX = dotScales[i].value
-                        scaleY = dotScales[i].value
-                        alpha = dotAlphas[i].value
-                    }
-                    .background(PTCoral, CircleShape))
-            }
-        }
-    }
-}
-
-@Composable
-fun ScreenDownloading(progressPercent: Int) {
-    val progress = progressPercent / 100f
-    // CSS: transition: 'stroke-dashoffset 0.6s ease' — progress 변경 시 smooth 0.6s 전환
-    val animatedProgress by animateFloatAsState(
-        targetValue = progress,
-        animationSpec = tween(600, easing = FastOutSlowInEasing),
-        label = "downloadArc"
-    )
-    val downloaded = "%.1f".format(progress * 2.4f)
-    Column(Modifier.fillMaxSize().background(PTBackground)) {
-        PTHeader()
-        // padding: '8px 28px 24px'
-        Column(Modifier.fillMaxSize().padding(top = 8.dp, start = 28.dp, end = 28.dp, bottom = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally) {
-            Box(Modifier.size(220.dp).padding(top = 14.dp), contentAlignment = Alignment.Center) {
-                Canvas(Modifier.fillMaxSize()) {
-                    val r = 78.dp.toPx()
-                    val stroke = Stroke(14.dp.toPx(), cap = StrokeCap.Round)
-                    val tl = Offset(center.x - r, center.y - r)
-                    drawCircle(PTPeach.copy(alpha = .55f), r, style = stroke)
-                    // animatedProgress 사용 → 0.6s smooth transition
-                    drawArc(PTCoral, -90f, 360f * animatedProgress, false, tl, Size(r*2, r*2), style = stroke)
-                }
-                // 4개 Sparkle — 디자인 원본 위치 반영
-                Text("✨", Modifier.align(Alignment.TopStart).offset(16.dp, 18.dp), fontSize = 18.sp)
-                Text("⭐", Modifier.align(Alignment.TopEnd).offset((-22).dp, 30.dp), fontSize = 14.sp)
-                Text("✨", Modifier.align(Alignment.BottomEnd).offset((-10).dp, (-36).dp), fontSize = 16.sp)
-                Text("⭐", Modifier.align(Alignment.BottomStart).offset(22.dp, (-22).dp), fontSize = 14.sp)
-                Pip(size = 120.dp, wiggle = true)
-            }
-            Spacer(Modifier.height(22.dp))
-            Text("앱을 준비하고 있어요!", style = MaterialTheme.typography.headlineMedium, color = PTInk)
-            Spacer(Modifier.height(6.dp))
-            Text("조금만 기다려줘요 🌟", style = MaterialTheme.typography.bodyLarge, color = PTInkSoft)
-            Spacer(Modifier.height(20.dp))
-            Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween, Alignment.Bottom) {
-                Row(verticalAlignment = Alignment.Bottom) {
-                    Text("$progressPercent", style = MaterialTheme.typography.displayLarge,
-                        color = PTCoral)
-                    Text("%", style = MaterialTheme.typography.headlineMedium, color = PTCoral)
-                }
-                Text("${downloaded}GB / 2.4GB",
-                    style = MaterialTheme.typography.bodySmall, color = PTInkSoft)
-            }
-            Spacer(Modifier.height(18.dp))
-            // Wi-Fi tip card
-            Row(Modifier.fillMaxWidth().background(PTSkyPale, RoundedCornerShape(14.dp))
-                .padding(12.dp, 12.dp), horizontalArrangement = Arrangement.spacedBy(10.dp),
-                verticalAlignment = Alignment.CenterVertically) {
-                Box(Modifier.size(32.dp).background(Color.White, RoundedCornerShape(10.dp)),
-                    contentAlignment = Alignment.Center) {
-                    Text("📶", fontSize = 16.sp)
-                }
-                Column {
-                    Text("Wi-Fi 연결 시 더 빨라요!",
-                        style = MaterialTheme.typography.bodySmall, color = PTSkyDeep)
-                    Text("한 번만 받으면 끝이에요.",
-                        style = MaterialTheme.typography.bodySmall, color = PTInkSoft)
-                }
-            }
-        }
-    }
-}
-
-@Composable
 fun ScreenError(message: String, onRetry: () -> Unit) {
     Column(Modifier.fillMaxSize().background(PTBackground)) {
         PTHeader()
@@ -481,10 +357,7 @@ fun Main(state: MainScreen.State, modifier: Modifier = Modifier) {
     Scaffold(modifier = modifier, containerColor = PTBackground) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             when (val s = state.status) {
-                is MainScreen.Status.CheckingModel     -> ScreenChecking(false)
-                is MainScreen.Status.InitializingModel -> ScreenChecking(true)
-                is MainScreen.Status.Downloading       -> ScreenDownloading(s.progressPercent)
-                is MainScreen.Status.CheckingSymbols   -> ScreenCheckingSymbols()
+                is MainScreen.Status.CheckingSymbols -> ScreenCheckingSymbols()
                 is MainScreen.Status.DownloadingSymbols -> ScreenDownloadingSymbols(
                     downloaded = s.downloaded,
                     total = s.total,
@@ -493,7 +366,6 @@ fun Main(state: MainScreen.State, modifier: Modifier = Modifier) {
                 is MainScreen.Status.Error -> ScreenError(s.message) {
                     state.eventSink(MainScreen.Event.OnRetryDownload)
                 }
-                else -> Unit
             }
         }
     }

@@ -8,11 +8,18 @@ import com.google.mediapipe.framework.image.BitmapImageBuilder
 import com.google.mediapipe.tasks.genai.llminference.LlmInference
 import com.google.mediapipe.tasks.genai.llminference.LlmInferenceSession
 import com.kangraemin.pictalk.domain.model.AacLabel
+import com.kangraemin.pictalk.domain.model.DownloadState
+import com.kangraemin.pictalk.domain.model.GemmaSetupState
 import com.kangraemin.pictalk.domain.repository.ArasaacRepository
 import com.kangraemin.pictalk.domain.repository.GemmaRepository
+import com.kangraemin.pictalk.domain.repository.ModelRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import java.util.concurrent.atomic.AtomicBoolean
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,18 +27,41 @@ import javax.inject.Singleton
 class GemmaRepositoryImpl @Inject constructor(
     @ApplicationContext private val context: Context,
     private val arasaacRepository: ArasaacRepository,
+    private val modelRepository: ModelRepository,
 ) : GemmaRepository {
 
     private var llmInference: LlmInference? = null
 
+    private val setupStarted = AtomicBoolean(false)
+    private val _setupState = MutableStateFlow<GemmaSetupState>(GemmaSetupState.Idle)
+    override val setupState: StateFlow<GemmaSetupState> = _setupState.asStateFlow()
+
     override fun isReady(): Boolean = llmInference != null
 
-    override suspend fun initialize(modelPath: String) = withContext(Dispatchers.IO) {
-        val options = LlmInference.LlmInferenceOptions.builder()
-            .setModelPath(modelPath)
-            .setMaxTokens(512)
-            .build()
-        llmInference = LlmInference.createFromOptions(context, options)
+    override suspend fun setup() = withContext(Dispatchers.IO) {
+        if (!setupStarted.compareAndSet(false, true)) return@withContext
+        runCatching {
+            modelRepository.downloadModel().collect { state ->
+                when (state) {
+                    is DownloadState.Idle -> _setupState.value = GemmaSetupState.Idle
+                    is DownloadState.Downloading ->
+                        _setupState.value = GemmaSetupState.Downloading(state.progressPercent)
+                    is DownloadState.Complete -> {
+                        _setupState.value = GemmaSetupState.Initializing
+                        val options = LlmInference.LlmInferenceOptions.builder()
+                            .setModelPath(modelRepository.modelPath())
+                            .setMaxTokens(512).build()
+                        llmInference = LlmInference.createFromOptions(context, options)
+                        _setupState.value = GemmaSetupState.Ready
+                    }
+                    is DownloadState.Error ->
+                        _setupState.value = GemmaSetupState.Error(state.message)
+                }
+            }
+        }.onFailure {
+            _setupState.value = GemmaSetupState.Error(it.message ?: "초기화 실패")
+            setupStarted.set(false)
+        }
     }
 
     override suspend fun suggestLabels(imageDescription: String): List<AacLabel> = withContext(Dispatchers.IO) {

@@ -2,6 +2,8 @@ package com.kangraemin.pictalk.feature.main
 
 import android.net.Uri
 import androidx.compose.runtime.*
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import com.kangraemin.pictalk.domain.model.AacLabel
 import com.kangraemin.pictalk.domain.repository.GemmaRepository
 import com.slack.circuit.codegen.annotations.CircuitInject
@@ -27,11 +29,13 @@ class AiPresenter @AssistedInject constructor(
     @Composable
     override fun present(): AiScreen.State {
         val scope = rememberCoroutineScope()
+        val gemmaSetupState by gemmaRepository.setupState.collectAsState()
         var imageUri by remember { mutableStateOf<Uri?>(null) }
         var labels by remember { mutableStateOf<List<AacLabel>>(emptyList()) }
         var isInferring by remember { mutableStateOf(false) }
 
         return AiScreen.State(
+            gemmaSetupState = gemmaSetupState,
             imageUri = imageUri,
             labels = labels,
             isInferring = isInferring,
@@ -48,6 +52,7 @@ class AiPresenter @AssistedInject constructor(
                     }
                 }
                 is AiScreen.Event.OnCardTapped -> Unit  // TTS는 UI에서 처리
+                is AiScreen.Event.OnRetryGemmaSetup -> scope.launch { gemmaRepository.setup() }
                 AiScreen.Event.OnBack -> navigator.pop()
             }
         }
