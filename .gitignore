@@ -11,3 +11,6 @@ local.properties
 .env
 *.key
 *.pem
+
+# ai-bouncer 런타임 상태
+.ai-bouncer/
